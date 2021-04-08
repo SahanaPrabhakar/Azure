@@ -1,0 +1,4 @@
+These set of Powershell functions fetch the policy compliance status using a hybrid runbook worker and stores the output in a SQL DB. 
+PowerBI can then be leveraged to draw a compliance dashboard.
+The entire solution only uses Managed Identity which is more secure than using service principal.
+Also all keys are stored in a Automation Runbook credential store which is backed by keyvault.
