@@ -1,0 +1,41 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "actions": {
+                "value": [
+                    "*"
+                    ]
+        },
+        "notActions": {
+            "value": [
+                "Microsoft.Authorization/*/Delete",
+                "Microsoft.Authorization/*/Write",
+                "Microsoft.Authorization/elevateAccess/Action",
+                "Microsoft.Blueprint/blueprintAssignments/write",
+                "Microsoft.Blueprint/blueprintAssignments/delete",
+                "Microsoft.Network/routeTables/write",
+                "Microsoft.Network/routeTables/delete",
+                "Microsoft.Network/routeTables/routes/write",
+                "Microsoft.Network/routeTables/routes/delete",
+                "Microsoft.Network/virtualNetworks/write",
+                "Microsoft.Network/virtualNetworks/delete",
+                "Microsoft.Network/networkSecurityGroups/write",
+                "Microsoft.Network/networkSecurityGroups/delete",
+                "Microsoft.Network/vpnGateways/*",
+				"Microsoft.Network/expressRouteCircuits/*",
+                "Microsoft.Network/firewallPolicies/*",
+                "Microsoft.Network/vpnSites/*"
+                ]            
+        },
+        "roleName": {
+            "value": "AppOps connected subscription"
+        },
+        "roleDescription": {
+            "value": "Custom role for application team. Leverages the contributor role but disallowed edit to route tables, virtual networks and network security groups."
+        },
+        "env": {
+            "value": "Development"
+        }
+    }
+}
