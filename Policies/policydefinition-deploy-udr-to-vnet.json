@@ -90,8 +90,7 @@
                                         },
                                         "variables": {},
                                         "resources": [                                            
-                                            {
-                                
+                                            {                                
                                                 "type": "Microsoft.Network/routeTables",
                                                 "name": "[[parameters('udrName')]",
                                                 "apiVersion": "2020-08-01",
@@ -110,8 +109,8 @@
                                                 }
                                             }                            
                                         ],
-                                            "outputs": {}
-                                                                      
+                                        "outputs": {}                                                                      
+                                    }
                                 }
                             }
                         }
