@@ -1,0 +1,32 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "environment": {
+            "value": "PDEV"
+        },
+        "policyAssignmentEnforcementMode": {
+            "value": "Default"
+        },
+        "policyDefinitionName": {
+            "value": "61a4d60b-7326-440e-8051-9f94394d4dd1"
+        },
+        "policyEffect": {
+            "value": "modify"
+        },
+        "nonCompliantMessage": {
+            "value": "Sub should have a tag."
+        },
+        "policyParameters": {            
+            "value": { 
+                "tagName": {
+                    "value": "BU"
+                },
+                "tagValue": {
+                    "value": "Security"
+                }
+            }
+        }
+            
+    }
+}
