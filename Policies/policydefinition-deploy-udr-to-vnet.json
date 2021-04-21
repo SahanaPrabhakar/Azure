@@ -20,14 +20,7 @@
                     "version": "1.0.0",
                     "category": "Network"
                 },
-                "parameters": {
-                    "udrName": {
-                        "type": "String",
-                        "metadata": {
-                        "displayName": "udrName",
-                        "description": "Name of the default UDR"
-                        }                                     
-                    },
+                "parameters": {                    
                     "defaultRoute": {
                         "type": "String",
                         "metadata": {
@@ -55,8 +48,12 @@
                             "existenceCondition": {
                                 "allOf": [
                                     {
-                                        "field": "name",
-                                        "like": "[[parameters('udrName')]"
+                                        "field": "Microsoft.Network/routeTables/routes[*].nextHopType",
+                                        "contains": "VirtualAppliance"
+                                    },
+                                    {
+                                        "field": "Microsoft.Network/routeTables/routes[*].nextHopIpAddress",
+                                        "equals": "[[parameters('defaultRoute')]"
                                     }
                                 ]
                             },
@@ -65,7 +62,7 @@
                                     "mode": "incremental",
                                     "parameters": {                                       
                                         "udrName": {
-                                            "value": "[[parameters('udrName')]"
+                                            "value": "[[concat(field('name'),'-udr')]"
                                         },
                                         "udrLocation": {
                                             "value": "[[field('location')]"
