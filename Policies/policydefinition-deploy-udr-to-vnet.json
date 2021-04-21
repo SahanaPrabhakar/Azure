@@ -27,6 +27,18 @@
                             "displayName": "Default route to add into UDR",
                             "description": "Policy will deploy a default route table to a vnet."
                         }
+                    },
+                    "effect": {
+                        "type": "String",
+                        "metadata": {
+                            "displayName": "Effect",
+                            "description": "Enable or disable the execution of the policy"
+                        },
+                        "allowedValues": [
+                            "DeployIfNotExists",
+                            "Disabled"
+                        ],
+                        "defaultValue": "DeployIfNotExists"
                     }
                 },
                 "policyRule": {
@@ -39,7 +51,7 @@
                         ]
                     },
                     "then": {
-                        "effect": "deployIfNotExists",
+                        "effect": "[[parameters('effect')]",
                         "details": {
                             "type": "Microsoft.Network/routeTables",                            
                             "roleDefinitionIds": [
