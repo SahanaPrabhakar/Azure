@@ -1,0 +1,204 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {        
+  },
+  "variables": {
+    
+  },
+  "resources": [
+   {
+    "type": "Microsoft.Authorization/policyDefinitions",
+    "apiVersion": "2020-03-01",
+    "name": "deploy-default-nsg",
+    //"scope": "[concat('/providers/Microsoft.Management/managementGroups/', 'PDEV/PDEV-sandboxes/')]",
+    "location": "[deployment().location]",
+    "properties": {
+      "displayName": "Deploys default nsg to a subscription",
+      "policyType": "Custom",
+      "mode": "All",
+      "description": "This policy deploys deploys default nsg",
+      "metadata": {
+        "category": "Network"        
+      },
+      "parameters": {
+        "nsgName": {
+            "type": "String",
+            "metadata": {
+              "displayName": "nsgName",
+              "description": "Name of the default nsg"
+            }
+        },
+        "nsgRgName": {
+          "type": "String",
+          "metadata": {
+            "displayName": "nsgRgName",
+            "description": "Name of the landing zone vNet RG"
+          }
+        },
+        "nsgLocation": {
+          "type": "String",
+          "metadata": {
+            "displayName": "nsgLocation",
+            "description": "Location for the nsg"
+          }
+        }        
+      },
+      "policyRule": {
+        "if": {
+          "allOf": [
+            {
+              "field": "type",
+              "equals": "Microsoft.Resources/subscriptions"
+            }
+          ]
+        },
+        "then": {
+          "effect": "deployIfNotExists",
+          "details": {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[[parameters('nsgName')]",
+            "deploymentScope": "Subscription",
+            "existenceScope": "ResourceGroup",
+            "ResourceGroupName": "[[parameters('nsgRgName')]",
+            "roleDefinitionIds": [
+              "/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+            ],
+            "existenceCondition": {
+              "allOf": [
+                {
+                  "field": "name",
+                  "like": "[[parameters('nsgName')]"
+                },
+                {
+                  "field": "location",
+                  "equals": "[[parameters('nsgLocation')]"
+                }
+              ]
+            },
+            "deployment": {
+              "location": "northeurope",
+              "properties": {
+                "mode": "incremental",
+                "parameters": {
+                  "nsgRgName": {
+                    "value": "[[parameters('nsgRgName')]"
+                  },
+                  "nsgName": {
+                    "value": "[[parameters('nsgName')]"
+                  },
+                  "nsgLocation": {
+                    "value": "[[parameters('nsgLocation')]"
+                  }
+                },
+                "template": {
+                  "$schema": "http://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json",
+                  "contentVersion": "1.0.0.0",
+                  "parameters": {
+                    "nsgRgName": {
+                      "type": "string"
+                    },
+                    "nsgName": {
+                      "type": "string"
+                    },
+                    "nsgLocation": {
+                      "type": "string"
+                    }
+                  },
+                  "variables": {},
+                  "resources": [
+                    {
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2020-06-01",
+                      "name": "[[concat('es-lz-nsg-',substring(uniqueString(subscription().subscriptionId),0,6),'-rg')]",
+                      "location": "[[parameters('nsgLocation')]",
+                      "dependsOn": [],
+                      "properties": {
+                        "mode": "Incremental",
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "parameters": {},
+                          "variables": {},
+                          "resources": [
+                            {
+                              "type": "Microsoft.Resources/resourceGroups",
+                              "apiVersion": "2020-06-01",
+                              "name": "[[parameters('nsgRgName')]",
+                              "location": "[[parameters('nsgLocation')]",
+                              "properties": {}
+                            }
+                          ],
+                          "outputs": {}
+                        }
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2020-06-01",
+                      "name": "[[concat('es-lz-nsg-',substring(uniqueString(subscription().subscriptionId),0,6))]",
+                      "dependsOn": [
+                        "[[concat('es-lz-nsg-',substring(uniqueString(subscription().subscriptionId),0,6),'-rg')]"
+                      ],
+                      "properties": {
+                        "mode": "Incremental",
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "parameters": {},
+                          "variables": {},
+                          "resources": [                            
+                            {
+                              "type": "Microsoft.Network/networkSecurityGroups",
+                              "name": "[[parameters('nsgName')]",
+                              "location": "[[parameters('nsgLocation')]",
+                              "apiVersion": "2020-07-01",
+                              "properties": {
+                                "securityRules": [
+                                  {
+                                    "id": "DenyAllInBound",
+                                    "properties": {
+                                      "protocol": "*",
+                                      "sourcePortRange": "*",
+                                      "sourceAddressPrefix": "*",
+                                      "destinationPortRange": "*",
+                                      "destinationAddressPrefix": "*",
+                                      "access": "Deny",
+                                      "priority": 1000,
+                                      "direction": "Inbound"
+                                    }
+                                  },
+                                  {
+                                    "id": "DenyAllOutBound",
+                                    "properties": {
+                                      "protocol": "*",
+                                      "sourcePortRange": "*",
+                                      "destinationPortRange": "*",
+                                      "sourceAddressPrefix": "*",
+                                      "destinationAddressPrefix": "*",
+                                      "access": "Deny",
+                                      "priority": 1000,
+                                      "direction": "Outbound"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ],
+                          "outputs": {}
+                        }
+                      },
+                      "resourceGroup": "[[parameters('nsgRgName')]"
+                    }
+                  ],
+                  "outputs": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    }  
+   }
+  ]
+}
