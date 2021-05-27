@@ -2,3 +2,19 @@ These set of Powershell functions fetch the policy compliance status using a hyb
 PowerBI can then be leveraged to draw a compliance dashboard.
 The entire solution only uses Managed Identity which is more secure than using service principal.
 Also all keys are stored in a Automation Runbook credential store which is backed by keyvault.
+
+Azure Policy Insights API provides a current status view of all resources at management group or subscription scope. The Policies are evaluated every 24 hours and also every time a resource is updated or policies are applied. The Policy Insights API also captures a Timestamp which indicates when the last state change was reported which will help get the latest compliance status.
+Compliance status can be compliant, non-compliant, exempt, not evaluated.
+Azure policy database stores compliance data for last 90 days. But the Azure portal policy compliance dashboard shows a 7 day summarization.
+
+4 keys Azure APIs relevant to this solution are :
+1.	Policy States - List Query Results For Management Group (Azure Policy Insights) | Microsoft Docs
+2.	Get-AzPolicyStateSummary (Az.PolicyInsights) | Microsoft Docs
+3.	Get-AzPolicyDefinition (Az.Resources) | Microsoft Docs
+4.	Get-AzSubscription (Az.Accounts) | Microsoft Docs
+
+To deploy this solution
+1. Deploy a staging SQL database and reporting SQL DB
+2. Deploy the SourceTenants scripts - variables need to be replaced to point to your environment
+3. Run the SourceTenant scripts as automation scripts that run at a cadence - for example once in 8 hours. Use Hybrid Automation runbooks for additional network security.
+4. Connect a PBI dashboard to the SQL DB to draw reports
