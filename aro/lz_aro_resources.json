@@ -416,14 +416,14 @@
                                 },
                                 "masterProfile": {
                                     "vmSize": "[parameters('masterVmSize')]",
-                                    "subetId": "[resourceId(parameters('clusterVnetResourceGroup'),'Microsoft.Network/virtualNetworks/', parameters('clusterVnetName'), 'subnets/master')]"                                                                      
+                                    "subetId": "[resourceId(parameters('Microsoft.Network/virtualNetworks/subnets', parameters('clusterVnetName'), 'master')]"                                                                      
                                 },
                                 "workerProfiles": [
                                     {
                                         "name": "worker",
                                         "vmSize": "[parameters('workerVmSize')]",
                                         "diskSizeGB": "[parameters('workerVmDiskSize')]",
-                                        "subnetId": "[resourceId(parameters('clusterVnetResourceGroup'),'Microsoft.Network/virtualNetworks/', parameters('clusterVnetName'), 'subnets/worker')]",                                                                     
+                                        "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('clusterVnetName'), 'worker')]",                                                                     
                                         "count": "[parameters('workerCount')]"
                                     }
                                 ],
