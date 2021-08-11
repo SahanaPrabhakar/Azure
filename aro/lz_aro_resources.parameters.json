@@ -1,0 +1,82 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "westeurope"
+    },    
+    "clusterVnetName": {
+      "value": "aro-vnet"
+    },
+    "clusterVnetResourceGroup": {
+        "value": "aro-vnet-rg"
+    },
+        
+    "workerSubnetCidr": {
+      "value": "10.100.70.0/23"
+    },
+    "masterSubnetCidr": {
+      "value": "10.100.76.0/24"
+    },
+    "AROClusterClientObjectId": {
+      "value": ""
+    },
+    "udrName": {
+        "value": "aro-udr"
+    },
+    "defaultRoute": {
+        "value": "10.0.0.4"
+    },
+    "aroClusterResourceGroup": {
+        "value": "aro-service-rg"
+    },
+    "redhatFeatureObjectId": {
+      "value": "50c17c64-bc11-4fdd-a339-0ecd396bf911"
+    },
+    "domain": {
+      "value": ""
+    },    
+    "pullSecret": {
+      "value": ""
+    },
+    "masterVmSize": {
+      "value": "Standard_D8s_v3"
+    },
+    "workerVmSize": {
+      "value": "Standard_D4s_v3"
+    },
+    "workerVmDiskSize": {
+      "value": 128
+    },
+    "workerCount": {
+      "value": 3
+    },
+    "podCidr": {
+      "value": "10.128.0.0/14"
+    },
+    "serviceCidr": {
+      "value": "172.30.0.0/16"
+    },
+    "clusterName": {
+      "value": "aro-cluster-name"
+    },
+    "tags": {
+      "value": {
+        "env": "Dev",
+        "dept": "Ops"
+      }
+    },
+    "apiServerVisibility": {
+      "value": "Private"
+    },
+    "ingressVisibility": {
+      "value": "Private"
+    },
+    "AROClusterClientId": {
+      "value": ""
+    },   
+    "AROClusterClientSecret": {
+      "value": ""
+    } 
+  }
+}
