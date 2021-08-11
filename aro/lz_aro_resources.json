@@ -1,0 +1,449 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "location" : {
+        "type": "string",
+        "defaultValue": "westeurope",
+        "metadata": {
+          "description": "Location"
+        }
+      },
+      "clusterVnetName": {
+          "type": "string",          
+          "metadata": {
+              "description": "Name of ARO vNet"
+          }
+      },   
+      "clusterVnetResourceGroup": {
+          "type": "string",
+          "defaultValue": "aro-vnet-rg",
+          "metadata": {
+              "description": "Name of ARO vNet resource group"
+          }
+      },
+      "workerSubnetCidr": {
+          "type": "string",
+          "defaultValue": "10.100.70.0/23",
+          "metadata": {
+              "description": "Worker node subnet address space"
+          }
+      },
+      "masterSubnetCidr": {
+          "type": "string",
+          "defaultValue": "10.100.76.0/24",
+          "metadata": {
+              "description": "Master node subnet address space"
+          }
+      },     
+      "udrName": {
+          "type": "String",
+          "metadata": {
+              "description": "The name of the UDR which will be created to associate with the ARO subnets."
+          }
+      },
+      "defaultRoute": {
+          "type": "String",
+          "metadata": {
+              "description": "Next hop for the udr. For example Firewall private IP in the hub network."
+          }
+      },
+      "aroClusterResourceGroup": {
+          "type": "String",
+          "metadata": {
+              "description": "Resource group for ARO deployment"
+          }
+      },      
+      "AROClusterClientObjectId": {
+          "type": "string", 
+          "metadata": {
+              "description": "The object ID of the ARO SPN."
+          }
+      },
+      "redhatFeatureObjectId": {
+          "type": "String",
+          "metadata": {
+              "description": "RedHat feature Object ID in Azure. This is a constant value."
+          }
+      },
+      "domain": {
+          "type": "string",
+          "defaultValue": "",
+          "metadata": {
+              "description": "Domain Prefix"
+          }
+      },
+      "pullSecret": {
+          "type": "string",
+          "metadata": {
+              "description": "Pull secret from cloud.redhat.com. The json should be input as a string"
+          }
+      },
+      "masterVmSize" : {
+          "type": "string",
+          "defaultValue": "Standard_D8s_v3",
+          "metadata": {
+              "description": "Master Node VM Type"
+          }
+      },
+      "workerVmSize": {
+          "type": "string",
+          "defaultValue": "Standard_D4s_v3",
+          "metadata": {
+              "description": "Worker Node VM Type"
+          }
+      },
+      "workerVmDiskSize": {
+          "type" : "int",
+          "defaultValue": 128,
+          "minValue": 128,
+          "metadata": {
+              "description": "Worker Node Disk Size in GB"
+          }
+      },
+      "workerCount": {
+          "type": "int",
+          "defaultValue": 3,
+          "minValue": 3,
+          "metadata": {
+              "description": "Number of Worker Nodes"
+          }
+      },
+      "podCidr": {
+          "type": "string",
+          "defaultValue": "10.128.0.0/14",
+          "metadata": {
+              "description": "Cidr for Pods"
+          }
+      },
+      "serviceCidr": {
+          "type": "string",
+          "defaultValue": "172.30.0.0/16",
+          "metadata": {
+              "decription": "Cidr of service"
+          }
+      },
+      "clusterName" : {
+        "type": "string",
+        "metadata": {
+          "description": "Unique name for the cluster"
+        }
+      },
+      "tags": {
+          "type": "object",
+          "defaultValue" : {
+              "env": "Dev",
+              "dept": "Ops"
+          },
+          "metadata": {
+              "description": "Tags for resources"
+          }
+      },
+      "apiServerVisibility": {
+          "type": "string",
+          "allowedValues": [
+              "Private",
+              "Public"
+          ],
+          "defaultValue": "Public",
+          "metadata": {
+              "description": "Api Server Visibility"
+          }
+      },
+      "ingressVisibility": {
+          "type": "string",
+          "allowedValues": [
+              "Private",
+              "Public"
+          ],
+          "defaultValue": "Public",
+          "metadata": {
+              "description": "Ingress Visibility"
+          }
+      },
+      "AROClusterClientId" : {
+        "type": "string",
+        "metadata": {
+          "description": "The Application ID of an Azure Active Directory client application used for ARO deployment."
+        }
+      },      
+      "AROClusterClientSecret" : {
+        "type":"securestring",
+        "metadata": {
+          "description": "The secret of an Azure Active Directory client application used for ARO deployment."
+        }
+      }
+    },
+    "variables": {
+        
+    },
+    "resources": [            
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-06-01",
+            "name": "[concat('create-aro-resources-', parameters('clusterVnetResourceGroup'))]",
+            "resourceGroup": "[parameters('clusterVnetResourceGroup')]",
+            "properties": {
+                "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "parameters": {
+                    // Sharing parameters from outer to inner execution scope
+                    "locationInner": {
+                        "value": "[parameters('location')]"
+                    },
+                    "defaultRouteInner": {
+                        "value": "[parameters('defaultRoute')]"
+                    },
+                    "clusterVnetNameInner": {
+                        "value": "[parameters('clusterVnetName')]"
+                    },
+                    "udrNameInner": {
+                        "value": "[parameters('udrName')]"
+                    },
+                    "masterSubnetCidrInner": {
+                        "value": "[parameters('masterSubnetCidr')]"
+                    },
+                    "workerSubnetCidrInner": {
+                        "value": "[parameters('workerSubnetCidr')]"
+                    },                    
+                    "AROClusterClientObjectIdInner": {
+                        "value": "[parameters('AROClusterClientObjectId')]"
+                    },
+                    "redhatFeatureObjectIdInner": {
+                        "value": "[parameters('redhatFeatureObjectId')]"
+                    }
+                    
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "locationInner": {
+                            "type": "string"
+                        },
+                        "defaultRouteInner": {
+                            "type": "string"
+                        },
+                        "clusterVnetNameInner": {
+                            "type": "string"
+                        },
+                        "udrNameInner": {
+                            "type": "string"
+                        },
+                        "masterSubnetCidrInner": {
+                            "type": "string"
+                        },
+                        "workerSubnetCidrInner": {
+                            "type": "string"
+                        },                      
+                        "AROClusterClientObjectIdInner": {
+                            "type": "string"
+                        },
+                        "redhatFeatureObjectIdInner": {
+                            "type": "string"
+                        }                       
+                    },                           
+                    "variables": {
+                        "networkContribRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '4d97b98b-1d4f-4787-a291-c67834d212e7')]"
+                    },             
+                    "resources": [        
+                        {
+                            "name": "[parameters('udrNameInner')]",
+                            "type": "Microsoft.Network/routeTables",
+                            "apiVersion": "2020-08-01",
+                            "location": "[parameters('locationInner')]",
+                            "properties": {
+                                "routes": [
+                                    {
+                                        "name": "AzureFirewallRoute",
+                                        "properties": 
+                                        {
+                                            "addressPrefix": "0.0.0.0/0",
+                                            "nextHopType": "VirtualAppliance",
+                                            "nextHopIpAddress": "[parameters('defaultRouteInner')]"
+                                        }
+                                    }
+                                ]
+                            }     
+                        },
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/subnets",
+                            "apiVersion": "2020-07-01",
+                            "name": "[concat(parameters('clusterVnetNameInner'),'/master')]",
+                            "location": "[parameters('locationInner')]",            
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Network/routeTables', parameters('udrNameInner'))]"
+                            ], 
+                            "properties": {                
+                                "addressPrefix": "[parameters('masterSubnetCidrInner')]",
+                                "serviceEndpoints": [
+                                    {
+                                        "service": "Microsoft.ContainerRegistry"
+                                    }
+                                ],
+                                "privateLinkServiceNetworkPolicies": "Disabled",
+                                "routeTable": {
+                                    "id": "[resourceId('Microsoft.Network/routeTables', parameters('udrNameInner'))]"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/subnets",
+                            "apiVersion": "2020-07-01",
+                            "name": "[concat(parameters('clusterVnetNameInner'),'/worker')]",
+                            "location": "[parameters('locationInner')]",            
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Network/routeTables', parameters('udrNameInner'))]"
+                            ], 
+                            "properties": {
+                                "addressPrefix": "[parameters('workerSubnetCidrInner')]",
+                                "serviceEndpoints": [
+                                    {
+                                        "service": "Microsoft.ContainerRegistry"
+                                    }
+                                ],
+                                "routeTable": {
+                                    "id": "[resourceId('Microsoft.Network/routeTables', parameters('udrNameInner'))]"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "apiVersion": "2020-08-01-preview",
+                            "name": "[guid(subscription().id, deployment().name, parameters('AROClusterClientObjectIdInner'),parameters('clusterVnetNameInner'))]",                                        
+                            "scope": "[format('Microsoft.Network/virtualNetworks/{0}', parameters('clusterVnetNameInner'))]",
+                            "properties": {
+                                "roleDefinitionId": "[variables('networkcontribRole')]",
+                                "principalId":"[parameters('AROClusterClientObjectIdInner')]"                                
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "apiVersion": "2020-08-01-preview",
+                            "name": "[guid(subscription().id, deployment().name, parameters('AROClusterClientObjectIdInner'),parameters('udrNameInner'))]",    
+                            "scope":"[format('Microsoft.Network/routeTables/{0}', parameters('udrNameInner'))]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Network/routeTables', parameters('udrNameInner'))]"
+                            ],
+                            "properties": {
+                                "roleDefinitionId": "[variables('networkcontribRole')]",
+                                "principalId":"[parameters('AROClusterClientObjectIdInner')]"
+                                
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "apiVersion": "2020-08-01-preview",
+                            "name": "[guid(subscription().id, deployment().name, parameters('redhatFeatureObjectIdInner'),parameters('clusterVnetNameInner'))]",            
+                            "scope":"[format('Microsoft.Network/virtualNetworks/{0}', parameters('clusterVnetNameInner'))]",
+                            "properties": {
+                                "roleDefinitionId": "[variables('networkcontribRole')]",
+                                "principalId":"[parameters('redhatFeatureObjectIdInner')]"
+                                
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "apiVersion": "2020-08-01-preview",
+                            "name": "[guid(subscription().id, deployment().name, parameters('redhatFeatureObjectIdInner'),parameters('udrNameInner'))]",    
+                            "scope":"[format('Microsoft.Network/routeTables/{0}', parameters('udrNameInner'))]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Network/routeTables', parameters('udrNameInner'))]"
+                            ],
+                            "properties": {
+                                "roleDefinitionId": "[variables('networkcontribRole')]",
+                                "principalId":"[parameters('redhatFeatureObjectIdInner')]"
+                                
+                            }
+                        }
+                    ]   
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2021-04-01",
+            "name": "[parameters('aroClusterResourceGroup')]",
+            "location": "[parameters('location')]",
+            "properties": {}
+            
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-06-01",
+            "name": "[concat('create-aro-resources-in',parameters('aroClusterResourceGroup'))]",
+            "resourceGroup": "[parameters('aroClusterResourceGroup')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups', parameters('aroClusterResourceGroup'))]"
+            ],            
+            "properties": {
+                "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "outer"
+                },
+                "parameters": {                   
+                },
+                
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {                        
+                    },
+                    "variables": {                        
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.RedHatOpenShift/OpenShiftClusters",
+                            "apiVersion": "2020-04-30",
+                            "name": "[parameters('clusterName')]",
+                            "location": "[parameters('location')]",
+                            "tags": "[parameters('tags')]",           
+                            "properties": {
+                                "clusterProfile": {                                    
+                                    "domain": "[parameters('domain')]",
+                                    "resourceGroupId": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/aro-rg')]",
+                                    "pullSecret": "[parameters('pullSecret')]"
+                                },
+                                "networkProfile": {
+                                    "podCidr": "[parameters('podCidr')]",
+                                    "serviceCidr": "[parameters('serviceCidr')]"
+                                },
+                                "servicePrincipalProfile": {
+                                    "clientId": "[parameters('AROClusterClientId')]",
+                                    "clientSecret": "[parameters('AROClusterClientSecret')]"
+                                },
+                                "masterProfile": {
+                                    "vmSize": "[parameters('masterVmSize')]",
+                                    "subetId": "[resourceId(parameters('clusterVnetResourceGroup'),'Microsoft.Network/virtualNetworks/', parameters('clusterVnetName'), 'subnets/master')]"                                                                      
+                                },
+                                "workerProfiles": [
+                                    {
+                                        "name": "worker",
+                                        "vmSize": "[parameters('workerVmSize')]",
+                                        "diskSizeGB": "[parameters('workerVmDiskSize')]",
+                                        "subnetId": "[resourceId(parameters('clusterVnetResourceGroup'),'Microsoft.Network/virtualNetworks/', parameters('clusterVnetName'), 'subnets/worker')]",                                                                     
+                                        "count": "[parameters('workerCount')]"
+                                    }
+                                ],
+                                "apiserverProfile": {
+                                    "visibility": "[parameters('apiServerVisibility')]"
+                                },
+                                "ingressProfiles": [
+                                    {
+                                        "name": "default",
+                                        "visibility": "[parameters('ingressVisibility')]"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }   
+       
+    ]
+}
+                    
+                          
