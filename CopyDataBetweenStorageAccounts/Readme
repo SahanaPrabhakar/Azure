@@ -1,0 +1,6 @@
+Sometimes there is a need to copy data from one storage account to another. In this example I have used Azure Functions and BlobClient python API to do the copy. 
+
+The BlobClient copy activity does an async copy across storage accounts and hence I have introduced a busy wait to wait for the job to complete. 
+Also the Function is triggered based on a StorageAccount EventGrid trigger on Blob created event. So another approach to handle completion is to trigger another Blob created trigger on the target blob to delete the blob from source file.
+Which is the use case I am trying to solve here. The data needs to be copied from a storage account with public access to a storage account with access restrictions and delete from source storage account.
+This can be quite useful when you are working with applications which do not give you an option to land data in a secure storage location.
