@@ -12,6 +12,7 @@ from azure.storage.blob import ContainerClient
 import azure.functions as func
 
 import azure.functions as func
+import time
 
 
 def main(event: func.EventGridEvent):
@@ -31,72 +32,59 @@ def main(event: func.EventGridEvent):
 
     tmp = event.subject.split("blobs/")
     blobname = tmp[len(tmp)-1]    
-
-    tmp = blobname.split("/")
-    foldername = tmp[0]
-
-    # When any file arrives, check if NumberOfFiles exist. If not quit.
-    # Then check the count of files with Number of Files.
-    # If match then initiate delete of source files in foldername
-    # Use list blobs and then delete
-    # Register Event grid trigger in target container
-
-    if(check_if_ready(target_container_name, foldername)):
-        logging.info(f"Number of files matched. Ready to delete.")
-        delete_blob_source(foldername)
+       
+    if(check_if_ready(target_container_name, blobname)):
+        logging.info(f"Size match. Delete file.")
+        delete_blob_source(blobname)
     
-def check_if_ready(target_container_name, foldername):        
+def check_if_ready(target_container_name, blobname):        
 
     try:
-        #BlobServiceClient for target storage account
-        blob_service_client = BlobServiceClient.from_connection_string(os.getenv("AZURE_STORAGE_DEST_CONNECTION_STRING"))
+        dest_blob = BlobClient.from_connection_string(
+                os.getenv("AZURE_STORAGE_DEST_CONNECTION_STRING"),
+                target_container_name, blobname
+                )
+        dest_blob_properties = dest_blob.get_blob_properties()
+        dest_blob_size = dest_blob_properties.size
 
-        # Instantiate a ContainerClient for target container
-        container_client = blob_service_client.get_container_client(target_container_name)                 
-              
-        #ItemsPaged iterator, Get all blobs in the folder
-        targetBlobList = container_client.list_blobs(foldername)
+        source_container = os.getenv("AZURE_SOURCE_CONTAINER")
+        source_blob = BlobClient.from_connection_string(
+                os.getenv("AZURE_STORAGE_CONNECTION_STRING"), 
+                source_container, blobname
+                )        
+        source_blob_properties = source_blob.get_blob_properties()
+        source_blob_size = source_blob_properties.size
+
         count = 0
-        for i in targetBlobList:
-            count = count+1
-        if (count == 0):
-            return False
-    
-        # If not returned yet, Number_of_files.txt exists.
-        # Open file
-        # Get the BlobClient from the ContainerClient to interact with a specific blob        
-        number_of_file_blob_name = foldername + '/Number_of_files.txt'
-        blob_client = container_client.get_blob_client(number_of_file_blob_name)
-        data = blob_client.download_blob()
-        numberoffiles = data.content_as_text(max_concurrency=1, encoding='UTF-8')
-        logging.info(f'Number of files to match is : {numberoffiles}')
-        logging.info(f'Count is: {count}')
-
-        # Compare with count-1 (Original count does not include Number_of_files.txt)
-        if (int(numberoffiles) == count-1):
-            return True
-   
-        return False
-
+        while(source_blob_size != dest_blob_size):
+            time.sleep(10)
+            count = count + 10
+            # wait for 50 minutes to timeout
+            if(count == 3000):
+                return False
+        
+        return True
+        
     except Exception as e:
         logging.exception(f"Function copy_container Exception: {e}")
         return False
 
-def delete_blob_source(foldername): 
+def delete_blob_source(blobname): 
         
     try:
-        #BlobServiceClient for target storage account
-        blob_service_client = BlobServiceClient.from_connection_string(os.getenv("AZURE_STORAGE_CONNECTION_STRING"))
-
         source_container = os.getenv("AZURE_SOURCE_CONTAINER")
-        # Instantiate a ContainerClient for target container
-        container_client = blob_service_client.get_container_client(source_container)                 
-              
-        #ItemsPaged iterator, Get all blobs in the folder
-        sourceBlobList = container_client.list_blobs(foldername)
-        for blob in sourceBlobList:
-            logging.info(f'Deleting blob: {blob.name}')
-            container_client.delete_blob(blob.name)
+        source_blob = BlobClient.from_connection_string(
+                os.getenv("AZURE_STORAGE_CONNECTION_STRING"), 
+                source_container, blobname
+                ) 
+
+        # Lease the source blob for the delete        
+        lease = BlobLeaseClient(source_blob)    
+        lease.acquire()
+        source_props = source_blob.get_blob_properties()
+        
+        if (source_props.lease.state == "leased"):            
+            source_blob.delete_blob(lease=lease)
         
     except Exception as e:
         print("Exception in delete_blob_service: ", e)
