@@ -53,22 +53,6 @@ def copy_container(container_name, foldername):
             count = count+1
             blob_copy(container_name, b_name)
 
-        #Write new file to destination blob with number of files to wait for before deleting source
-        logging.info(f'Number of files: {str(count)}')
-        data = str(count).encode(encoding = 'UTF-8', errors = 'strict')
-
-        # Create a BlobClient representing the destination blob with a unique name.
-        target_container_name = os.getenv("AZURE_TARGET_CONTAINER")
-        target_file_name = foldername + "/Number_of_files.txt"
-
-        dest_blob = BlobClient.from_connection_string(
-                os.getenv("AZURE_STORAGE_DEST_CONNECTION_STRING"),
-                target_container_name, target_file_name
-                )
-
-        # Write number of files that will be copied to destination blob/target_file_name
-        dest_blob.upload_blob(data, blob_type="BlockBlob")     
-
     except Exception as e:
         logging.exception(f"Function copy_container Exception: {e}")
 
