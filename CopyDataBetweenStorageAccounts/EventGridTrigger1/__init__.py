@@ -42,8 +42,7 @@ def copy_container(container_name, foldername):
     # Instantiate a ContainerClient
     container_client = blob_service_client.get_container_client(container_name)   
     # Get a list of all blobs.  
-    sourceBlobList = container_client.list_blobs(foldername)        
-    # TODO: Add pagination
+    sourceBlobList = container_client.list_blobs(foldername)            
 
     try:    
         count = 0
