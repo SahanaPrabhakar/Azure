@@ -12,7 +12,7 @@ a)SOURCE_ACCOUNT_URL
 b)SOURCE_CONTAINER_NAME
 c)TARGET_ACCOUNT_URL
 d)TARGET_CONTAINER_NAME
-2. Configure Function App System Assigned Managed identity and give this identity "Blob Data Contributor role" in both source and target storage account.
+2. Configure Function App System Assigned Managed identity and give this identity "Blob Data Contributor role" in both source and target storage containers.
 3. Az login 
 4. Az account set --subscription <sub id>
 5. func azure functionapp publish <function app name>
