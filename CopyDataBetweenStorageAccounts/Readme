@@ -7,13 +7,14 @@ account to a storage account which only allows access from "Trusted Azure servic
 exposure and hence the data exfiltration risk.
 
 To deploy the function just run
-0. Create a Function App in premium plan and configure env variables listed below
+1. Create a Function App in premium plan and configure env variables listed below
 a)SOURCE_ACCOUNT_URL
 b)SOURCE_CONTAINER_NAME
 c)TARGET_ACCOUNT_URL
 d)TARGET_CONTAINER_NAME
-1. Az login 
-2. Az account set --subscription <sub id>
-3. func azure functionapp publish <function app name>
-4. Configure Event Grid system topic from source and destination storage account for "Blob created" event
+2. Configure Function App System Assigned Managed identity and give this identity "Blob Data Contributor role" in both source and target storage account.
+3. Az login 
+4. Az account set --subscription <sub id>
+5. func azure functionapp publish <function app name>
+6. Configure Event Grid system topic from source and destination storage account for "Blob created" event
 
