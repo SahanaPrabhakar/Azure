@@ -5,3 +5,4 @@
 azure-functions
 azure.core
 azure.storage.blob
+azure.identity
