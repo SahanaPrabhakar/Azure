@@ -1,0 +1,102 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {      
+        "storageAccounts_source": {            
+            "type": "String"
+        },
+        "sites_compliancecenterprmfunction_name": {            
+            "type": "String"
+        },
+        "storageAccounts_target": {            
+            "type": "String"
+        }
+    },
+    "variables": {
+        "systemTopicSourceName": "[concat('systemTopics-',guid(parameters('storageAccounts_source')))]",
+        "systemTopicTargetName": "[concat('systemTopics-',guid(parameters('storageAccounts_target')))]",
+        "complianceCenterFunctionApp" : "[resourceId('Microsoft.Web/sites',parameters('sites_compliancecenterprmfunction_name'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.EventGrid/systemTopics",
+            "apiVersion": "2021-12-01",
+            "name": "[variables('systemTopicSourceName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "source": "[resourceId('Microsoft.Storage/storageAccounts',parameters('storageAccounts_source'))]",
+                "topicType": "microsoft.storage.storageaccounts"
+            }
+        },
+        {
+            "type": "Microsoft.EventGrid/systemTopics",
+            "apiVersion": "2021-12-01",
+            "name": "[variables('systemTopicTargetName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "source": "[resourceId('Microsoft.Storage/storageAccounts',parameters('storageAccounts_target'))]",
+                "topicType": "microsoft.storage.storageaccounts"
+            }
+        },
+        {
+            "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
+            "apiVersion": "2021-12-01",
+            "name": "[concat(variables('systemTopicSourceName'), '/blobcopy')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.EventGrid/systemTopics', variables('systemTopicSourceName'))]"
+            ],
+            "properties": {
+                "destination": {
+                    "properties": {
+                        "resourceId": "[concat(variables('complianceCenterFunctionApp'), '/functions/EventGridTrigger1')]",
+                        "maxEventsPerBatch": 1,
+                        "preferredBatchSizeInKilobytes": 64
+                    },
+                    "endpointType": "AzureFunction"
+                },
+                "filter": {
+                    "includedEventTypes": [
+                        "Microsoft.Storage.BlobCreated"
+                    ],
+                    "enableAdvancedFilteringOnArrays": true
+                },
+                "labels": [],
+                "eventDeliverySchema": "EventGridSchema",
+                "retryPolicy": {
+                    "maxDeliveryAttempts": 30,
+                    "eventTimeToLiveInMinutes": 1440
+                }
+            }
+        },
+        {
+            "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
+            "apiVersion": "2021-12-01",
+            "name": "[concat(variables('systemTopicTargetName'), '/blobready')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.EventGrid/systemTopics', variables('systemTopicTargetName'))]"
+            ],
+            "properties": {
+                "destination": {
+                    "properties": {
+                        "resourceId": "[concat(variables('complianceCenterFunctionApp'), '/functions/DeleteBlobEventGridTrigger')]",
+                        "maxEventsPerBatch": 1,
+                        "preferredBatchSizeInKilobytes": 64
+                    },
+                    "endpointType": "AzureFunction"
+                },
+                "filter": {
+                    "includedEventTypes": [
+                        "Microsoft.Storage.BlobCreated"
+                    ],
+                    "enableAdvancedFilteringOnArrays": true
+                },
+                "labels": [],
+                "eventDeliverySchema": "EventGridSchema",
+                "retryPolicy": {
+                    "maxDeliveryAttempts": 30,
+                    "eventTimeToLiveInMinutes": 1440
+                }
+            }
+        }
+    ]
+}
