@@ -602,6 +602,23 @@
                         {
                             "name": "WEBSITE_CONTENTSHARE",
                             "value": "[concat(toLower(parameters('sites_compliancecenterprmfunction_name')), 'a7fd')]"
+                        },
+                        {
+                            "name": "SOURCE_ACCOUNT_URL",
+                            "value": "[concat('https://', tolower(parameters('storageAccounts_compliancecenterdata_name')),'.blob.core.windows.net')]"
+                        },
+                        {
+                            "name": "SOURCE_CONTAINER_NAME",
+                            "value": "[parameters('source_container')]"
+                        },
+                        {
+
+                            "name": "TARGET_ACCOUNT_URL",
+                            "value": "[concat('https://', tolower(parameters('storageAccounts_compliancetargetstorage_name')),'.blob.core.windows.net')]"
+                        },
+                        {
+                            "name": "TARGET_CONTAINER_NAME",
+                            "value": "[parameters('target_container')]"
                         }
                     ],
                     "cors": {
@@ -614,7 +631,8 @@
                 },
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverfarms_ASP_compliancecenterpremiumrg_b3a0_name'))]",
                 "clientAffinityEnabled": false,                
-                "keyVaultReferenceIdentity": "SystemAssigned"
+                "keyVaultReferenceIdentity": "SystemAssigned",
+                "virtualNetworkSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_compliancecenter_vnet_name'), 'function-app-delegate-subnet')]"
             }
         },        
         {
@@ -630,21 +648,35 @@
                 "vnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_compliancecenter_vnet_name'), 'function-app-delegate-subnet')]",
                 "isSwift": true
             }
-        }//,        
-        // {
-        //     "type": "Microsoft.Storage/storageAccounts/blobServices/containers/providers/roleAssignments",
-        //     "apiVersion": "2018-01-01-preview",
-        //     "name": "[concat(parameters('storageAccounts_compliancecenterdata_name'), '/default/', parameters('source_container'), '/Microsoft.Authorization/', guid(resourceGroup().id, parameters('sites_compliancecenterprmfunction_name')))]",
-        //     "dependsOn": [
-        //         "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_compliancecenterdata_name'))]",
-        //         "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', parameters('storageAccounts_compliancecenterdata_name'), 'default', parameters('source_container'))]",
-        //         "[resourceId('Microsoft.Web/sites', parameters('sites_compliancecenterprmfunction_name'))]"
-        //     ],
-        //     "properties": {
-        //         "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('sites_compliancecenterprmfunction_name')), '2018-11-01', 'Full').identity.principalId]",
-        //         "roleDefinitionId": "[variables('roleIdStorageBlobDataContributor')]"
-        //     }
-        // }
+        },        
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers/providers/roleAssignments",
+            "apiVersion": "2018-01-01-preview",
+            "name": "[concat(parameters('storageAccounts_compliancecenterdata_name'), '/default/', parameters('source_container'), '/Microsoft.Authorization/', guid(resourceGroup().id, parameters('source_container')))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_compliancecenterdata_name'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', parameters('storageAccounts_compliancecenterdata_name'), 'default', parameters('source_container'))]",
+                "[resourceId('Microsoft.Web/sites', parameters('sites_compliancecenterprmfunction_name'))]"
+            ],
+            "properties": {
+                "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('sites_compliancecenterprmfunction_name')), '2018-11-01', 'Full').identity.principalId]",
+                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions/',variables('roleIdStorageBlobDataContributor'))]"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers/providers/roleAssignments",
+            "apiVersion": "2018-01-01-preview",
+            "name": "[concat(parameters('storageAccounts_compliancetargetstorage_name'), '/default/', parameters('target_container'), '/Microsoft.Authorization/', guid(resourceGroup().id, parameters('target_container')))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_compliancetargetstorage_name'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', parameters('storageAccounts_compliancetargetstorage_name'), 'default', parameters('target_container'))]",
+                "[resourceId('Microsoft.Web/sites', parameters('sites_compliancecenterprmfunction_name'))]"
+            ],
+            "properties": {
+                "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('sites_compliancecenterprmfunction_name')), '2018-11-01', 'Full').identity.principalId]",
+                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions/',variables('roleIdStorageBlobDataContributor'))]"
+            }
+        }
     ]
     
 }
