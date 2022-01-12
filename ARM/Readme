@@ -5,4 +5,4 @@ Run the following commands once you download them:
 4.	az deployment group create --resource-group compliancecenter-rg --template-file compliance-center-resources.json --parameters compliance-center-resources.parameters.json --name deploymentname1
 5.	az functionapp deployment source config-zip -g compliancecenter-rg -n compliancecenterprmfunction2 –src compliancecenter2.zip
 6.	az deployment group create --resource-group compliancecenter_rg --template-file compliance-center-event-grid.json --parameters compliance-center-event-grid.parameters.json --name edeploy1
-7.	Configure managed identity role assignment manually
+
