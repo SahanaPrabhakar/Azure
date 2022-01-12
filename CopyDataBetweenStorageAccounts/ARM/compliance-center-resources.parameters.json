@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {        
+        "sites_compliancecenterprmfunction_name": {
+            "value": "compliancecenterprmfunction2"
+        },
+        "storageAccounts_compliancecenterdata_name": {
+            "value": "compliancecenterdata2"
+        },
+        "source_container": {
+            "value": "ediscoverydata"
+        },
+        "target_container": {
+            "value": "targetcontainer"
+        },
+        "virtualNetworks_compliancecenter_vnet_name": {
+            "value": "compliancecenter-vnet2"
+        },
+        "components_compliancecenterprmfunction_name": {
+            "value": "compliancecenterprmfunction2"
+        },
+        "storageAccounts_compliancetargetstorage_name": {
+            "value": "compliancetargetstorage2"
+        },        
+        "privateEndpoints_targetstorage_priv_link_name": {
+            "value": "targetstorage-priv-link"
+        },
+        "storageAccounts_premiumfunction_name": {
+            "value": "compliancefuncstor824la"
+        }
+    }
+}
