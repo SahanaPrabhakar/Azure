@@ -26,16 +26,20 @@ Follow the below steps to setup the environment (ARM template and automation ste
    
 6. Configure target storage account for private access
    1. Disallow all networks
-      ![Image 2](images/img002.png)
+
+![Image 2](images/img002.png)
    
    2. Select Private endpoint
-      ![Image 3](images/img003.png)
+
+![Image 3](images/img003.png)
    
    3. Configure Private Endpoint. Choose the right region and choose blob storage. In ‘Configuration’ step of private endpoint choose the vNet created earlier and private-link-subnet. Also configure the Private DNS zone and connect it to the same vNET. Follow the instructions in the Azure portal prompt.
-      ![Image 4](images/img004.png)
+
+![Image 4](images/img004.png)
 
 7. Configure the Function App outbound connectivity to the vNET and choose function-app-subnet. This will allow private connectivity to target container.
-   ![Image 5](images/img005.png)
+
+![Image 5](images/img005.png)
    
 8. Now publish the 2 functions to the FunctionApp. Clone the repository from GitHub and run the following commands in that directory. Once done the Function App will have two functions – EventGridTrigger1 & [DeleteSourceFilesEventGridTrigger](https://github.com/SahanaPrabhakar/Azure/tree/main/CopyDataBetweenStorageAccounts/DeleteSourceFilesEventGridTrigger "DeleteSourceFilesEventGridTrigger")
    1. Az login 
@@ -44,18 +48,20 @@ Follow the below steps to setup the environment (ARM template and automation ste
    
 9. In the source storage container, configure Event Grid system topic for "Blob created" and trigger Function app – EventGridTrigger1 function
 
-   ![Image 6](images/img006.png)
+![Image 6](images/img006.png)
 
-   ![Image 7](images/img007.png)
+![Image 7](images/img007.png)
 
 10. Repeat the same steps for target storage container but connect with [DeleteSourceFilesEventGridTrigger](https://github.com/SahanaPrabhakar/Azure/tree/main/CopyDataBetweenStorageAccounts/DeleteSourceFilesEventGridTrigger "DeleteSourceFilesEventGridTrigger") function
    
 11. The setup is now ready. To test it initiate export from Compliance center. You should see the data land in source container and then get copied to target container. Once copied the source container is deleted.
    1. Login to <https://compliance.microsoft.com/> and initiate case export.
-      ![Image 8](images/img008.png)
+
+![Image 8](images/img008.png)
    
    2. Provide the Source Container SAS Token and URL 
-      ![image 9](images/img009.png)
+
+![image 9](images/img009.png)
 
 
 
