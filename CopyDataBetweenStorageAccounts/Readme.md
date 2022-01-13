@@ -2,7 +2,7 @@
 
 Microsoft 365 Compliance Center *is a dedicated workspace for your compliance, privacy, and risk management specialists.* It’s packed with useful administrative tools to support you in meeting your legal, regulatory, and organizational requirements. Compliance center has a feature to export compliance data to a storage account in Azure. Currently this storage account cannot be secured with storage account firewalls or private links. This could be a challenge for highly regulated environment as the data exported from compliance center could be user email, Teams conversations etc. Below I have tried to address that problem by copying these files to a secure storage account as soon as they arrive thus reducing the risk of data leak. The data is copied as soon as “Summary.txt”  arrives in the source storage container to a destination storage container via an Azure Function. The architecture is as below. The logic can be extended to cater to other use cases but some edits in the Function may be needed. As this implementation is written specifically for compliance center.
 
-               ![Architecture](images/img001.jpg)
+   ![Architecture](images/img001.jpg)
 
 The function implementation is as is in repository. 
 
