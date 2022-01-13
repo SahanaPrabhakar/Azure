@@ -9,22 +9,28 @@ The function implementation is as is in repository.
 Follow the below steps to setup the environment (ARM template and automation steps in [ARM](ARM) ) :
 
 1. Create two storage accounts 
+
    a) source storage account with source blob container
    b) target storage account with target blob container
+   
 2. Create a Function App in premium plan with Python version 3.~ and configure env variables listed below
+
    a) SOURCE\_ACCOUNT\_URL
    b) SOURCE\_CONTAINER\_NAME
    c) TARGET\_ACCOUNT\_URL
    d) TARGET\_CONTAINER\_NAME
+   
 3. Deploy a Function App with Premium Plan. Premium plan ensures that the function timeout is 60 mins and also allows vNET integration (For the target storage account).
 
 4. Configure Function App System Assigned Managed identity and give this identity "Blob Data Contributor role" in both source and target storage containers (Limit scope to container only).
 
 5. Deploy a vNET and configure two subnets in it. The IP range in the vNET can be anything as the traffic will not travel outside of the vNET.
+
    a) Function-app-subnet 
    b) Private-link-subnet
    
 6. Configure target storage account for private access
+
    a) Disallow all networks
 
       ![Image 2](images/img002.jpg)
@@ -45,8 +51,7 @@ Follow the below steps to setup the environment (ARM template and automation ste
    ```
    az login 
    az account set --subscription <sub id>
-   func azure functionapp publish <function app name>
-   
+   func azure functionapp publish <function app name>   
    ```
    
 9. In the source storage container, configure Event Grid system topic for "Blob created" and trigger Function app – EventGridTrigger1 function
@@ -60,12 +65,8 @@ Follow the below steps to setup the environment (ARM template and automation ste
 11. The setup is now ready. To test it initiate export from Compliance center. You should see the data land in source container and then get copied to target container. Once copied the source container is deleted.
    a) Login to <https://compliance.microsoft.com/> and initiate case export.
 
-      ![Image 8](images/img008.jpg)
+   ![Image 8](images/img008.jpg)
    
-   2. Provide the Source Container SAS Token and URL 
+   b) Provide the Source Container SAS Token and URL 
 
-      ![image 9](images/img009.jpg)
-
-
-
-
+   ![image 9](images/img009.jpg)
